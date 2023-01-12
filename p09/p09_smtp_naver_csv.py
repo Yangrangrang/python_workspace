@@ -24,8 +24,8 @@ def naver_smtp(name, receiv_email, p_title, p_contents):
         msg['Subject'] = title  # 제목
 
         s = smtplib.SMTP(smtpName,smtpPort) # SMTP서버명, SMTR 포트
-        s.set_debuglevel(True)
-        # s.starttls()
+        # s.set_debuglevel(True)
+        s.starttls()
         s.login(sendEmail,password) # 본인 네이버 계정, 비번
         s.sendmail(sendEmail,recvEmail,msg.as_string())
     except Exception as e:
