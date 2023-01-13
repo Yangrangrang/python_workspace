@@ -16,7 +16,7 @@ def financedic():
     list_b = []
 
 
-    for page in range(1,3,1):
+    for page in range(1,55,1):
         url = "https://fine.fss.or.kr/main/fin_tip/dic/financedic.jsp?page="+str(page)  # 금융용어 사이트 url
         print('url:{}'.format(url))
         try:
@@ -65,15 +65,44 @@ def financedic():
 
                 print('fdic:{}'.format(fdic))
                 print('fdic:{}'.format(len(fdic.keys())))
+
+
             else:
                 print('response.status_code:{}'.format(response.status_code))
                 print("url을 확인 하세요.")
         except Exception as e:
             print(e)
 
+    return fdic
+
+def doSave(fdic):
+    '''읽어온 금융 용어 저장'''
+    conn = None
+    try:
+        conn = sqlite3.connect("test.db")
+        cur = conn.cursor()
+        sql = "INSERT INTO fss_dic VALUES (?,?,?)"
+
+        # for i in range(1,11,1):
+        #     cur.execute(sql, (i, fdic.keys()[i], fdic.values()[i]))
+
+        for i in fdic:
+            name = fdic[i][0]
+            content = fdic[i][1]
+            print(name,content)
+            cur.execute(sql, (i,name,content))
+        conn.commit()
+    except Exception as e:
+        # 오류가 발생하면 rollback
+        conn.rollback()
+        print(e)
+    finally:
+        conn.close()
 
 def main():
-    financedic()
+    data_fdic = financedic()
+    doSave(data_fdic)
+
 
 
 main()
