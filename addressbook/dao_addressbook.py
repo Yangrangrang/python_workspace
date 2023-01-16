@@ -154,9 +154,44 @@ class AddressbookDao(WorkDiv):
             self.disconn()
             return vo
 
-    def doRetrieve(self):
-        pass
+    def doRetrieve(self, searchDiv='', searchWord=''):
+        '''목록조회: 검색구분, 검색어'''
+        outList= []
+        try:
+            # 1. 디비연결
+            self.connect()
 
+            # 2.param 확인
+            print('searchDiv:{}, searchWord:{}'.format(searchDiv,searchWord))
+
+            # 2-1. cursor
+            cur = self.conn.cursor()
+
+            # 3. sql
+            sql = '''SELECT id,name,PASSWD,EMAIL
+                        FROM ADDRESSBOOK
+                        WHERE NAME like ? '''
+            # 4. sql 실행
+            cur.execute(sql, (searchWord+'%',))
+            outList = [Member(id=row[0],name=row[1],passwd=row[2],email=row[3]) for row in cur]
+
+            for vo in outList:
+                print(vo)
+
+        except Exception as e:
+            print('-' * 35)
+            print('doRetrieve:{}'.format(e))
+            print('-' * 35)
+        finally:
+            self.disconn()
+        return outList
+
+def doRetrieveTest():
+    a = AddressbookDao()
+    searchDiv = ""
+    searchWord = "한나"
+    mList = a.doRetrieve(searchDiv,searchWord)
+    print(mList)
 
 def addAndGet():
     #1. 데이터 삭제
@@ -228,10 +263,65 @@ def isSameData(org:Member,vsVO:Member):
 
     return 1
 
+def update():
+    a = AddressbookDao()
+    m01 = Member(id=1, name='한나', passwd='1234', email='gkssk2309@naver.com')
+    m02 = Member(id=2, name='한나1', passwd='4321', email='gkssk1@naver.com')
+    m03 = Member(id=3, name='한나2', passwd='1234', email='gkssk2@naver.com')
+
+    # 1. 기존 데이터 삭제
+    a.doDelete(m01.id)
+    a.doDelete(m02.id)
+    a.doDelete(m03.id)
+
+    # 2. 데이터 등록
+    a.doSave(m01)
+    if a.getCount() == 1:
+        print("1성공")
+    else:
+        print("1실패")
+
+    # 3. 데이터 조회
+    out01 = a.doSelectOne(m01)
+    if isSameData(m01, out01) == 1:
+        print("1조회 성공")
+    else:
+        print("1조회 실패")
+
+    # 4. 조회 데이터 수정
+    # m01 = Member(id=1, name='한나1', passwd='4321', email='gkssk1@naver.com')
+    upData = '-U'
+    out01.id = out01.id
+    out01.name = out01.name + "" + upData
+    out01.passwd = out01.passwd + "" + upData
+    out01.email = out01.email + "" + upData
+
+
+    # 5. update
+    # flag = a.doUpdate(m01)
+    flag = a.doUpdate(out01)
+    if flag == 1:
+        print("2성공")
+    else:
+        print("2실패")
+
+    # 6. 조회(업데이트된 데이터)
+    # v01 = a.doSelectOne(m01)
+    upOut01 = a.doSelectOne(out01)
+
+    # 7. 비교
+    # a = isSameData(m01, v01)
+    a = isSameData(out01, upOut01)
+    if a == 1:
+        print("3성공")
+    else:
+        print("3실패")
+
 def main():
     # a = AddressbookDao()    # AddressbookDao 생성
     # a.connect() #DB 연결
-    addAndGet()
+    # addAndGet()
+    # update()
 
     # m01 = Member(id=1, name='한나', passwd='1234', email='gkssk2309@naver.com')
     # m02 = Member(id=2, name='한나1', passwd='1234', email='gkssk1@naver.com')
@@ -260,5 +350,8 @@ def main():
     # if flag == 1:
     #     print("수정 성공:{}".format(flag))
 
+    #------------------------------------------
+    addAndGet()
+    doRetrieveTest()
 
 main()

@@ -9,7 +9,7 @@ def naver_smtp(name, receiv_email, p_title, p_contents):
     s = None
     try:
         smtpName = "smtp.naver.com" # SMTP 서버명
-        smtpPort = 587              # SMTP 포트
+        smtpPort = 465              # SMTP 포트
 
         sendEmail = "gkssk2309@naver.com"   # 네이버 계정
         password = "As7036811*"
@@ -23,9 +23,9 @@ def naver_smtp(name, receiv_email, p_title, p_contents):
         msg['To'] = recvEmail   # 받는 사람
         msg['Subject'] = title  # 제목
 
-        s = smtplib.SMTP(smtpName,smtpPort) # SMTP서버명, SMTR 포트
-        # s.set_debuglevel(True)
-        s.starttls()
+        s = smtplib.SMTP_SSL(smtpName,smtpPort) # SMTP서버명, SMTR 포트
+        s.set_debuglevel(True)  # 465/ SMTP_SSL
+        # s.starttls() #587
         s.login(sendEmail,password) # 본인 네이버 계정, 비번
         s.sendmail(sendEmail,recvEmail,msg.as_string())
     except Exception as e:
