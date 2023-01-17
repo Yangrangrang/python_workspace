@@ -46,7 +46,7 @@ class AddressbookDao(WorkDiv):
     def connect(self):
         '''DB 연결'''
         try:
-            self.conn = sqlite3.connect("addressbook.db")
+            self.conn = sqlite3.connect("/Users/yanghanna/Documents/BIG_AI0102/1. python/workspace/addressbook/addressbook.db")
         except Exception as e:
             print('-'*35)
             print('connect:{}'.format(e))
@@ -74,6 +74,7 @@ class AddressbookDao(WorkDiv):
 
             #5. 트랜젝션 처리
             self.conn.commit()
+            flag = cur.rowcount
 
         except Exception as e:
             print('-' * 35)
@@ -81,7 +82,7 @@ class AddressbookDao(WorkDiv):
             print('-' * 35)
         finally:
             self.disconn()
-        flag = 1
+
         return flag
 
     def doUpdate(self, m:Member):
@@ -95,7 +96,7 @@ class AddressbookDao(WorkDiv):
 
             cur.execute(sql, (m.name, m.passwd, m.email, m.id))
             self.conn.commit()
-            flag = 1
+            flag = cur.rowcount
         except Exception as e:
             print('-' * 35)
             print('doUpdate:{}'.format(e))
@@ -119,17 +120,19 @@ class AddressbookDao(WorkDiv):
             cur.execute(sql, (id,))
 
             self.conn.commit()
+            flag = cur.rowcount # 반영된 건수
+            print('doDelete().cur.rowcount:{}'.format(cur.rowcount))
         except Exception as e:
             print('-' * 35)
             print('doDelete:{}'.format(e))
             print('-' * 35)
         finally:
             self.disconn()
-        flag = 1
         return flag
 
     def doSelectOne(self, m:Member):
         outVO = None
+        vo = None
         try:
             self.connect()
             print('member:{}'.format(m.id))
@@ -143,8 +146,9 @@ class AddressbookDao(WorkDiv):
 
             # 데이터 조회 : 리스트 내포
             outVO = [Member(id=row[0], name=row[1], passwd=row[2], email=row[3]) for row in cur ]
-            vo = outVO[0]
-            print('outVO:{} {} {} {}'.format(vo.id, vo.name, vo.passwd, vo.email))
+            if outVO != None and len(outVO)>0:
+                vo = outVO[0]
+                print('outVO:{} {} {} {}'.format(vo.id, vo.name, vo.passwd, vo.email))
 
         except Exception as e:
             print('-' * 35)
@@ -152,10 +156,10 @@ class AddressbookDao(WorkDiv):
             print('-' * 35)
         finally:
             self.disconn()
-            return vo
+        return vo
 
     def doRetrieve(self, searchDiv='', searchWord=''):
-        '''목록조회: 검색구분, 검색어'''
+        '''목록조회: 검색구분(아이디:10 이름:20 이메일:30, 검색어'''
         outList= []
         try:
             # 1. 디비연결
@@ -168,11 +172,30 @@ class AddressbookDao(WorkDiv):
             cur = self.conn.cursor()
 
             # 3. sql
-            sql = '''SELECT id,name,PASSWD,EMAIL
+            sql = '''SELECT id,name,passwd,email
                         FROM ADDRESSBOOK
-                        WHERE NAME like ? '''
+                        WHERE 1=1 '''
+
+            sqlWhere = ""
+
+            if searchDiv == "10":
+                sqlWhere = "AND id like ?"  # mysql  ? -> %s 사용
+            elif searchDiv == "20":
+                sqlWhere = "AND name like ?"
+            elif searchDiv == "30":
+                sqlWhere = "AND email like ?"
+
+            # 동적 sql
+            sql = sql + "\n" + sqlWhere
+            print('sql:{}'.format(sql))
+
             # 4. sql 실행
-            cur.execute(sql, (searchWord+'%',))
+
+            if searchDiv != "":
+                cur.execute(sql, (searchWord+'%',))
+            else:
+                cur.execute(sql, )
+
             outList = [Member(id=row[0],name=row[1],passwd=row[2],email=row[3]) for row in cur]
 
             for vo in outList:
@@ -188,7 +211,8 @@ class AddressbookDao(WorkDiv):
 
 def doRetrieveTest():
     a = AddressbookDao()
-    searchDiv = ""
+    # 아이디:10 이름:20 이메일:30
+    searchDiv = "20"
     searchWord = "한나"
     mList = a.doRetrieve(searchDiv,searchWord)
     print(mList)
@@ -351,7 +375,8 @@ def main():
     #     print("수정 성공:{}".format(flag))
 
     #------------------------------------------
-    addAndGet()
-    doRetrieveTest()
+    if __name__ == '__main__':
+        addAndGet()
+        doRetrieveTest()
 
 main()

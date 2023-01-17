@@ -5,7 +5,5 @@
 생성자 : yanghanna
 '''
 
-__all__ = ['WorkDiv']
-
-from cmn.common import WorkDiv
+__all__ = ['common']
 
