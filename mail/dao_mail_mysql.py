@@ -5,6 +5,9 @@
 생성자 : yanghanna
 '''
 import sqlite3
+
+import pymysql
+
 from cmn.common import WorkDiv
 from mail.vo_mail import MailVo
 
@@ -19,7 +22,7 @@ class MailDao(WorkDiv):
         try:
             # auto commit, isolation_level=None
             # self.conn = sqlite3.connect("/Users/yanghanna/Documents/BIG_AI0102/1. python/workspace/addressbook/addressbook.db",isolation_level=None)
-            self.conn = sqlite3.connect("/Users/yanghanna/Documents/BIG_AI0102/1. python/workspace/addressbook/addressbook.db")
+            self.conn = pymysql.Connect(user='root', passwd='root', host='localhost', db='pymysql', charset='utf8')
         except Exception as e:
             print('-' * 35)
             print('connect:{}'.format(e))
@@ -46,7 +49,7 @@ class MailDao(WorkDiv):
             print(cur)
 
             # sql
-            sql = "INSERT INTO MAIL_CONTENT VALUES (?,?,?,?)"
+            sql = "INSERT INTO MAIL_CONTENT VALUES (%s,%s,%s,%s)"
             print(sql)
             cur.execute(sql, (m.id, m.title, m.contents, m.regDt))
 
@@ -70,7 +73,7 @@ class MailDao(WorkDiv):
             print('param.id:{}'.format(id))
             cur = self.conn.cursor()
             print('cur:{}'.format(cur))
-            sql = "DELETE FROM MAIL_CONTENT WHERE id=?"
+            sql = "DELETE FROM MAIL_CONTENT WHERE id=%s"
             print('sql:{}'.format(sql))
             cur.execute(sql, (id, ))
             self.conn.commit()
@@ -95,7 +98,7 @@ class MailDao(WorkDiv):
             # 3. sql
             sql = '''SELECT id,name,passwd,email
                                 FROM MAIL_CONTENT
-                                WHERE id = ? '''
+                                WHERE id = %s '''
 
             # 4. sql 실행
             cur.execute(sql, (m.id, ))
@@ -124,7 +127,7 @@ class MailDao(WorkDiv):
             print(m.id)
             cur = self.conn.cursor()
             print(cur)
-            sql = "SELECT id,title,contents,reg_dt FROM MAIL_CONTENT WHERE id=?"
+            sql = "SELECT id,title,contents,reg_dt FROM MAIL_CONTENT WHERE id=%s"
             print(sql)
             cur.execute(sql, (m.id, ))
 
@@ -150,9 +153,9 @@ def addAndGet():
 def main():
     if __name__ == '__main__':
         a = MailDao()
-        test = MailVo(id='1', title='test', contents='testcontents', regDt='a')
-        flag = a.doSave(test)
-        # flag = a.doDelete(1)
+        test = MailVo(id='1', title='test', contents='testcontents', regDt='20240118')
+        # flag = a.doSave(test)
+        flag = a.doDelete(1)
         if flag == 1:
             print("성공")
 
